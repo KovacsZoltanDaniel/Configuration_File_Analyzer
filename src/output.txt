@@ -1,0 +1,40 @@
+Application:
+  name: MyWebApp
+  version: 1.2.3
+  environment: production
+Database:
+  host: db.mywebapp.com
+  port: 3306
+  user: appuser
+  password: s3cur3P@ss
+  options:
+    pool_size: 10
+    timeout: 5000
+    ssl: True
+Server:
+  host: 0.0.0.0
+  port: 8080
+  log_level: DEBUG
+  threads: 4
+Logging:
+  format: [%(asctime)s] %(levelname)s in %(module)s: %(message)s
+  handlers: ['console', 'file']
+  file:
+    path: /var/log/mywebapp/app.log
+    max_size: 10MB
+    backups: 5
+Features:
+  authentication:
+    enabled: True
+    jwt_secret: super_secret_key
+    token_expiry_minutes: 60
+  caching:
+    enabled: True
+    backend: redis
+    ttl_seconds: 3600
+  email_notifications:
+    enabled: False
+    smtp_server: smtp.example.com
+    smtp_port: 587
+    username: notify_user
+    password: another_s3cur3P@ss
