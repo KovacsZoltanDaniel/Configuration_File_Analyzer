@@ -1,42 +1,53 @@
-Application:
-  environment: production
-  name: MyWebApp
-  version: 1.2.3
-Database:
-  host: db.mywebapp.com
-  options:
-    pool_size: 10
-    ssl: True
-    timeout: 5000
-  password: s3cur3P@ss
-  port: 3306
-  user: appuser
-Features:
-  authentication:
-    enabled: True
-    jwt_secret: super_secret_key
-    token_expiry_minutes: 60
-  caching:
-    backend: redis
-    enabled: True
-    ttl_seconds: 3600
-  email_notifications:
-    enabled: False
-    password: another_s3cur3P@ss
-    smtp_port: 587
-    smtp_server: smtp.example.com
-    username: notify_user
-Logging:
-  file:
-    backups: 5
-    max_size: 10MB
-    path: /var/log/mywebapp/app.log
-  format: [%(asctime)s] %(levelname)s in %(module)s: %(message)s
+--- Application ---
+  environment = production
+  name = MyWebApp
+  version = 1.2.3
+
+--- Database ---
+  host = db.mywebapp.com
+  --- options ---
+    pool_size = 10
+    ssl = True
+    timeout = 5000
+
+  password = s3cur3P@ss
+  port = 3306
+  user = appuser
+
+--- Features ---
+  --- authentication ---
+    enabled = True
+    jwt_secret = super_secret_key
+    token_expiry_minutes = 60
+
+  --- caching ---
+    backend = redis
+    enabled = True
+    ttl_seconds = 3600
+
+  --- email_notifications ---
+    enabled = False
+    password = another_s3cur3P@ss
+    smtp_port = 587
+    smtp_server = smtp.example.com
+    username = notify_user
+
+
+--- Logging ---
+  --- file ---
+    backups = 5
+    max_size = 10MB
+    path = /var/log/mywebapp/app.log
+
+  format = [%(asctime)s] %(levelname)s in %(module)s: %(message)s
   handlers:
     - console
     - file
-Server:
-  host: 0.0.0.0
-  log_level: DEBUG
-  port: 8080
-  threads: 4
+
+--- Server ---
+  host = 0.0.0.0
+  log_level = DEBUG
+  port = 8080
+  threads = 4
+
+
