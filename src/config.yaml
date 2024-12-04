@@ -6,22 +6,22 @@ Database:
   host: db.mywebapp.com
   options:
     pool_size: 10
-    ssl: True
+    ssl: true
     timeout: 5000
   password: s3cur3P@ss
   port: 3306
   user: appuser
 Features:
   authentication:
-    enabled: True
+    enabled: true
     jwt_secret: super_secret_key
     token_expiry_minutes: 60
   caching:
     backend: redis
-    enabled: True
+    enabled: true
     ttl_seconds: 3600
   email_notifications:
-    enabled: False
+    enabled: false
     password: another_s3cur3P@ss
     smtp_port: 587
     smtp_server: smtp.example.com
@@ -31,10 +31,10 @@ Logging:
     backups: 5
     max_size: 10MB
     path: /var/log/mywebapp/app.log
-  format: [%(asctime)s] %(levelname)s in %(module)s: %(message)s
+  format: '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
   handlers:
-    - console
-    - file
+  - console
+  - file
 Server:
   host: 0.0.0.0
   log_level: DEBUG
