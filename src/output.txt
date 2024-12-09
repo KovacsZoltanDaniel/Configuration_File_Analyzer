@@ -18,7 +18,7 @@
   --- authentication ---
     enabled = True
     jwt_secret = super_secret_key
-    token_expiry_minutes = 60
+    token_expiry_minutes = 608
 
   --- caching ---
     backend = redis
@@ -28,7 +28,7 @@
   --- email_notifications ---
     enabled = False
     password = another_s3cur3P@ss
-    smtp_port = 587
+    smtp_port = 58
     smtp_server = smtp.example.com
     username = notify_user
 
@@ -40,14 +40,13 @@
     path = /var/log/mywebapp/app.log
 
   format = [%(asctime)s] %(levelname)s in %(module)s: %(message)s
-  handlers:
+  handlers =
     - console
     - file
+
 
 --- Server ---
   host = 0.0.0.0
   log_level = DEBUG
   port = 8080
   threads = 4
-
-

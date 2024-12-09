@@ -1,120 +1,86 @@
 import yaml
-import os
-import re
 
+def load_yaml(file_path):
+    with open(file_path, 'r') as file:
+        return yaml.safe_load(file)
 
+def validate_data(data):
+    errors = []
 
-def read_yaml_file(file_path):
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"A(z) {file_path} fájl nem található.")
-    try:
-        with open(file_path, 'r') as file:
-            return yaml.safe_load(file)
-    except yaml.YAMLError as e:
-        raise ValueError(f"Hiba történt a YAML fájl beolvasása közben: {e}")
-    except Exception as e:
-        raise Exception(f"Ismeretlen hiba történt a fájl beolvasása közben: {e}")
-
-
-
-def validate_config_data(config):
-
-    if 'Application' in config and 'version' in config['Application']:
-        version = config['Application']['version']
-        if not isinstance(version, str) or not version.replace('.', '').isdigit():
-            raise ValueError("A 'version' mezőnek számnak kell lennie, pl. 1.2.3")
-
-
-    if 'Server' in config and 'port' in config['Server']:
-        port = config['Server']['port']
-        if not isinstance(port, int):
-            raise ValueError("A 'Server.port' mezőnek egész számnak kell lennie.")
-
-
-    if 'Features' in config:
-        for feature, settings in config['Features'].items():
-            if 'enabled' in settings:
-                enabled = settings['enabled']
-                if not isinstance(enabled, bool):
-                    raise ValueError(f"A '{feature}.enabled' mezőnek boolean értéket kell tartalmaznia.")
-
-
-    if 'Logging' in config and 'file' in config['Logging'] and 'max_size' in config['Logging']['file']:
-        max_size = config['Logging']['file']['max_size']
-
-
-        if isinstance(max_size, str):
-
-            match = re.match(r'^(\d+)(MB|GB|KB)?$', max_size)
-            if not match:
-                raise ValueError(
-                    "A 'max_size' mezőnek számot vagy szám + érvényes mértékegységet (MB, GB, KB) kell tartalmaznia.")
-        elif not isinstance(max_size, int):
-            raise ValueError("A 'max_size' mezőnek számnak kell lennie.")
-
-
-
-def write_config(data, file, indent=0):
-    try:
-        for key, value in data.items():
+    def validate_section(section, path="root"):
+        for key, value in section.items():
+            current_path = f"{path}.{key}"
             if isinstance(value, dict):
-                file.write(" " * indent + f"--- {key} ---\n")
-                write_config(value, file, indent + 2)
+                validate_section(value, current_path)
             elif isinstance(value, list):
-                file.write(" " * indent + f"{key}:\n")
-                for item in value:
+                for i, item in enumerate(value):
                     if isinstance(item, dict):
-                        file.write(" " * (indent + 2) + "-\n")
-                        write_config(item, file, indent + 4)
-                    else:
-                        file.write(" " * (indent + 2) + f"- {item}\n")
+                        validate_section(item, f"{current_path}[{i}]")
+            elif isinstance(value, str):
+                if any(kw in key.lower() for kw in ["port", "time", "seconds", "minutes"]):
+                    if not value.isdigit():
+                        errors.append(f"Invalid value at {current_path}: expected a number, got '{value}'")
+
+    validate_section(data)
+    return errors
+
+def write_parsed_yaml(data, output_file):
+    def parse_section(section, indent=0):
+        output = []
+        for key, value in section.items():
+            if isinstance(value, dict):
+                output.append(f"{'  ' * indent}--- {key} ---")
+                output.extend(parse_section(value, indent + 1))
+                output.append('')
+            elif isinstance(value, list):
+                output.append(f"{'  ' * indent}{key} =")
+                for item in value:
+                    output.append(f"{'  ' * (indent + 1)}- {item}")
+                output.append('')
             else:
-                file.write(" " * indent + f"{key} = {value}\n")
+                output.append(f"{'  ' * indent}{key} = {value}")
+        return output
 
+    parsed_data = parse_section(data)
 
-        file.write("\n")
+    with open(output_file, 'w') as file:
+        file.write('\n'.join(parsed_data))
 
-    except Exception as e:
-        raise Exception(f"Hiba történt a konfigurációs adatok kiírása közben: {e}")
+def get_key_values(data, key_path):
+    keys = key_path.split('.')
+    current = data
 
-
-
-def write_to_output_file(file_path, config_data):
-    try:
-        with open(file_path, 'w') as output_file:
-            write_config(config_data, output_file)
-    except PermissionError:
-        raise PermissionError(f"Nincs jogosultság a(z) {file_path} fájlba való íráshoz.")
-    except Exception as e:
-        raise Exception(f"Ismeretlen hiba történt a fájl írása közben: {e}")
-
-
-
-def main():
-    input_file = 'config.yaml'
-    output_file = 'output.txt'
-
-    try:
-
-        config_data = read_yaml_file(input_file)
-
-
-        validate_config_data(config_data)
-
-
-        write_to_output_file(output_file, config_data)
-
-        print(f"A konfigurációs adatok sikeresen kiírásra kerültek a {output_file} fájlba.")
-
-    except FileNotFoundError as e:
-        print(e)
-    except ValueError as e:
-        print(e)
-    except PermissionError as e:
-        print(e)
-    except Exception as e:
-        print(f"Valami hiba történt: {e}")
-
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return None
+    return current
 
 if __name__ == "__main__":
-    main()
+    input_file = "config.yaml"
+    output_file = "output.txt"
+
+    yaml_data = load_yaml(input_file)
+
+    validation_errors = validate_data(yaml_data)
+    if validation_errors:
+        print("Validation errors found:")
+        for error in validation_errors:
+            print(f"- {error}")
+    else:
+        choice = input("Do you want to print the entire YAML file or query a specific key? (Enter 'all' or 'key'): ").strip().lower()
+
+        if choice == 'all':
+            write_parsed_yaml(yaml_data, output_file)
+            print(f"Parsed YAML data written to {output_file}")
+        elif choice == 'key':
+            key_path = input("Enter the key path (e.g., 'root.section.subsection'): ").strip()
+            value = get_key_values(yaml_data, key_path)
+
+            if value is not None:
+                print(f"Value for '{key_path}': {value}")
+            else:
+                print(f"Key '{key_path}' not found in the YAML data.")
+        else:
+            print("Invalid choice. Please enter 'all' or 'key'.")

@@ -15,7 +15,7 @@ Features:
   authentication:
     enabled: true
     jwt_secret: super_secret_key
-    token_expiry_minutes: 60
+    token_expiry_minutes: 608
   caching:
     backend: redis
     enabled: true
@@ -23,7 +23,7 @@ Features:
   email_notifications:
     enabled: false
     password: another_s3cur3P@ss
-    smtp_port: 587
+    smtp_port: 58
     smtp_server: smtp.example.com
     username: notify_user
 Logging:
